@@ -1,3 +1,4 @@
+# -*- coding: utf8 -*- 
 import datetime
 from datetime import date
 

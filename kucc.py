@@ -4,8 +4,17 @@ from ChromeBrowser import ChromeBrowser
 import time
 
 class kucc(ChromeBrowser):
-    # def __init__(self):
-    #     super().__init__()
+    # for singleton
+    def __new__(cls):
+        if not hasattr(cls,'instance'):
+            print('create')
+            cls.instance = super(kucc, cls).__new__(cls)
+        else:
+            print('recycle')
+        return cls.instance
+
+    def __init__(self):
+        super().__init__()
         
     def Start(self):
         self.open_page("https://kugolf.co.kr/login/login.asp")
@@ -15,6 +24,7 @@ class kucc(ChromeBrowser):
         self.input_id("log_id","lima36")
         self.input_id("login_pw","peace@2020")
         self.click_login2("bt_login")
+        self.ClosePopup()
         
     def ClosePopup(self):
         self.close_popup_alert()
@@ -32,7 +42,7 @@ class kucc(ChromeBrowser):
         print(nowDate, nextDate)
         url3 = "https://kugolf.co.kr/GolfRes/onepage/real_reservation.asp?usrmemcd=&pointdate="+ pointDate + "#pointdate=" + pointDate + \
                 "&courseid=0&openyn=1&dategbn=2&choice_time=00&settype=T&prevDate=" +prevDate + "&nowDate="+ nowDate + "&nextDate=" + nextDate
-        self.open_page(url3)
+        self.open_page2(url3)
 
         time.sleep(0.3)
 
@@ -40,3 +50,17 @@ class kucc(ChromeBrowser):
         # cmd2 = "javascript:timefrom_change('20211214','1','2','','00','T');"
         cmd3 = "javascript:quick_layout_info_html('')"
         self.run_script(cmd3)
+
+    def Close(self):
+        self.close_chrome()
+# cc = None
+# def open():
+#     global cc
+#     if not cc:
+#         cc = kucc()
+
+if __name__ == "__main__":
+    a = kucc()
+    print(a)
+    b = kucc()
+    print(b)

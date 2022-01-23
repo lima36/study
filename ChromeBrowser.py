@@ -21,7 +21,7 @@ class ChromeBrowser(metaclass=ABCMeta):
     # 초기자(initializer)
     def __init__(self):
         # 인스턴스 변수
-        if platform.system() == "linux" or platform.system() == "linux2":
+        if platform.system() == "Linux" or platform.system() == "Linux2":
             self.exec_chrome = "/home/lima/Work_Python/Code_Test/driver/chromedriver"
         elif platform.system() == "Windows":
             self.exec_chrome = "../chromedriver_win32/chromedriver.exe"
@@ -29,13 +29,16 @@ class ChromeBrowser(metaclass=ABCMeta):
             self.exec_chrome = "../chromedriver_win32/chromedriver.exe"
             
         self.options = webdriver.ChromeOptions()
-        self.options.add_argument("--start-maximized")
+        # self.options.add_argument("--start-maximized")
         self.options.add_argument("--disable-gpu")
         self.options.add_experimental_option("detach", True)
         self.options.add_experimental_option("excludeSwitches", ["enable-logging"])
-        self.driver = webdriver.Chrome(self.exec_chrome, options=self.options)
         
     def open_page(self, url):
+        self.driver = webdriver.Chrome(self.exec_chrome, options=self.options)
+        self.driver.get(url)
+    
+    def open_page2(self, url):
         self.driver.get(url)
     
     def input_id(self, id, text):
@@ -77,6 +80,7 @@ class ChromeBrowser(metaclass=ABCMeta):
         self.driver.execute_script("window.scrollTo(0, 1000)")   
         
     def close_chrome(self):
+        print('close chrome browser')
         self.driver.close()
     
     def refresh_chrome(self):
