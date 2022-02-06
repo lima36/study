@@ -1,8 +1,8 @@
 "Engergy Crawling"
-from types import NoneType
+# from types import NoneType
 from urllib.parse import quote_plus
 from bs4 import BeautifulSoup
-from selenium import webdriver
+# from selenium import webdriver
 import openpyxl
 import urllib.request as req
 
@@ -15,9 +15,12 @@ from datetime import date
 import datetime
 import re
 
+result = ""
+
 #--------------------------------------------------------------
 # Email 보내기
-def send_email():   
+def send_email():
+    global result
     # 세션 생성
     s = smtplib.SMTP('smtp.gmail.com', 587)
     s.starttls()
@@ -42,31 +45,39 @@ def send_email():
     # 세션 종료
     s.quit()
 
-now = date.today()
-  
-#-----------------------------------------------------------------
-url = "https://greenhome.kemco.or.kr/ext/inf/noti/selectNoticeList.do?pageIndex=1&boardType=N&sn=0"
-
-res = req.urlopen(url)
-soup = BeautifulSoup(res,'html.parser')
-result = ""
-titles = soup.select('#content > table > tbody > tr')
-for title in titles:
-    trs = title.find_all('td')
-
-    addr=title.find('a', href=True, text=True)
-    addr_text = addr['href']
-    infourl = "https://greenhome.kemco.or.kr/ext/inf/noti/selectNoticeDetail.do?searchCnd=0&searchWrd=&sn=" + re.findall('\d+', addr_text)[1] + "&boardType=N&pageIndex=1"
+def check_update():
+    global result
+    now = date.today()
     
-    item_time = datetime.datetime.strptime(trs[3].text.strip(), "%Y-%m-%d").date()
-    
-    if item_time >= now - datetime.timedelta(days=14) :
-        result += trs[3].text.strip() + ":" + trs[1].text.strip() + " : " + infourl + "\n"
+    #-----------------------------------------------------------------
+    url = "https://greenhome.kemco.or.kr/ext/inf/noti/selectNoticeList.do?pageIndex=1&boardType=N&sn=0"
+
+    res = req.urlopen(url)
+    soup = BeautifulSoup(res,'html.parser')
+    result = ""
+    titles = soup.select('#content > table > tbody > tr')
+    for title in titles:
+        trs = title.find_all('td')
+
+        addr=title.find('a', href=True, text=True)
+        addr_text = addr['href']
+        infourl = "https://greenhome.kemco.or.kr/ext/inf/noti/selectNoticeDetail.do?searchCnd=0&searchWrd=&sn=" + re.findall('\d+', addr_text)[1] + "&boardType=N&pageIndex=1"
         
-print(result)
+        item_time = datetime.datetime.strptime(trs[3].text.strip(), "%Y-%m-%d").date()
+        
+        if item_time >= now - datetime.timedelta(days=24) :
+            result += trs[3].text.strip() + ":" + trs[1].text.strip() + " : " + infourl + "\n"
+            
+    print(result)
 
 
-if result != "":
-    send_email()
-else:
-    print("No Message~~~")
+    if result != "":
+        send_email()
+    else:
+        print("No Message~~~")
+
+    return "energy"
+
+
+if __name__ == '__main__':
+    check_update()

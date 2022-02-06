@@ -22,7 +22,7 @@ class ChromeBrowser(metaclass=ABCMeta):
     def __init__(self):
         # 인스턴스 변수
         if platform.system() == "Linux" or platform.system() == "Linux2":
-            self.exec_chrome = "/home/lima/Work_Python/Code_Test/driver/chromedriver"
+            self.exec_chrome = "/home/lima/Work_Python/chromedriver_linux64/chromedriver"
         elif platform.system() == "Windows":
             self.exec_chrome = "../chromedriver_win32/chromedriver.exe"
         else:
@@ -103,3 +103,6 @@ class ChromeBrowser(metaclass=ABCMeta):
     def run_script(self, cmd):
         print("run_script")
         self.driver.execute_script(cmd)
+
+    def open_data(self, data):
+        self.driver.get()
