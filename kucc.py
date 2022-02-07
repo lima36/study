@@ -21,8 +21,8 @@ class kucc(ChromeBrowser):
           
     def Login(self):
         self.waitUntilOpen('log_id')
-        self.input_id("log_id","lima36")
-        self.input_id("login_pw","peace@2020")
+        self.input_id("log_id","")
+        self.input_id("login_pw","")
         self.click_login2("bt_login")
         self.ClosePopup()
         
