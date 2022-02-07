@@ -156,8 +156,8 @@ def make_reserve(user_id, user_pw, today, target_date, target_time):
 
 
 if __name__ == '__main__':
-    user_id = 'lima36'
-    user_pw = 'peace@2020'
+    user_id = ''
+    user_pw = ''
 
     # target_date='20220225'
     # target_time='0900:1300'
