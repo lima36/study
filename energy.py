@@ -22,9 +22,9 @@ result = ""
 def send_email():
     global result
     # 세션 생성
-    s = smtplib.SMTP('smtp.gmail.com', 587)
+    s = smtplib.SMTP('', 587)
     s.starttls()
-    s.login('limitsigma36@gmail.com', 'ebgqlgebhmiaqrvo')
+    s.login('', '')
 
     # 제목, 본문 작성
     msg = MIMEMultipart()
