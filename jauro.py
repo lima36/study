@@ -22,8 +22,8 @@ class jauro(ChromeBrowser):
           
     def Login(self):
         self.waitUntilOpen('ctl00_Content_UserID')
-        self.input_id("ctl00_Content_UserID","lima36")
-        self.input_passwd("ctl00_Content_UserPassword","peace@2020")
+        self.input_id("ctl00_Content_UserID","")
+        self.input_passwd("ctl00_Content_UserPassword","")
         self.click_login("LoginButton")
         
     def ClosePopup(self):
