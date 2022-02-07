@@ -17,8 +17,8 @@ import json
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
 
-    user_id = 'lima36'
-    user_pw = 'peace@2020'
+    user_id = ''
+    user_pw = ''
     target_date = '20220209'
     target_time = '0655:1255'
     #target_date = input('Target date (ex> yyyymmdd): ')
