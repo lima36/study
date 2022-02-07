@@ -181,8 +181,8 @@ class Golf():
 
 
 if __name__ == '__main__':
-    user_id = 'lima36s'
-    user_pw = 'peace@2020'
+    user_id = ''
+    user_pw = ''
 
     today = datetime.datetime.today().date()
     target = datetime.datetime.today().date() + dateutil.relativedelta.relativedelta(days=21)
