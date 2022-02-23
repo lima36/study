@@ -264,13 +264,24 @@ class KU:
             print(tar)
         print('========================')
 
+    def check_reserve(self):
+        url_check = 'https://kugolf.co.kr/GolfRes/onepage/my_golfreslist.asp'
+        res=self.sess.get(url_check)
+        print(res.text)
+
+    
+    def close(self):
+        self.sess.close()
+        self.sess = None
+
 
 def job(user_id, user_pw, target_date, target_time):
     cc = KU(today, target_date, target_time)
     cc.login(user_id, user_pw)
     cc.collect_info()
     if cc.check_target():
-        pass#cc.reserve()
+        cc.reserve()
+    cc.close()
 
 
 if __name__ == '__main__':
@@ -287,6 +298,12 @@ if __name__ == '__main__':
     test = 1
     if test == 1:
         job(user_id, user_pw, target_date, target_time)
+
+    elif test == 2:
+        cc = KU(today, target_date, target_time)
+        cc.login(user_id, user_pw)
+        cc.check_reserve()
+        cc.close()
 
     else:
         sched = BackgroundScheduler()
