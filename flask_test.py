@@ -17,9 +17,9 @@ def check_update():
 
 @app.route('/make_reserve')
 def make_reserve():
-    user_id = 'lima36'
-    user_pw = 'peace@2020'
-    user_phone = "010-7795-5647"
+    user_id = ''
+    user_pw = ''
+    user_phone = ""
 
     target = datetime.datetime.today() + dateutil.relativedelta.relativedelta(days=21)
     targetDate1 = datetime.datetime.strftime(target, '%Y%m%d')

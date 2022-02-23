@@ -167,9 +167,9 @@ def make_reserve(id, pw, target_date, target_time, telephone):
 # Main Loop
 # Press the green button in the gutter to run the script.
 if __name__ == '__main__':
-    user_id = 'lima36'
-    user_pw = 'peace@2020'
-    user_phone = "010-7795-5647"
+    user_id = ''
+    user_pw = ''
+    user_phone = ""
 
     target = datetime.datetime.today() + dateutil.relativedelta.relativedelta(days=21)
     targetDate1 = datetime.datetime.strftime(target, '%Y%m%d')

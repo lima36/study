@@ -144,7 +144,7 @@ def read_insideevs():
        
 def read_marklines():
     url2= "https://www.marklines.com/en/members/login"
-    soup = read_url_with_login(url2, "03062d4994", "pw0c11")
+    soup = read_url_with_login(url2, "", "")
     
     ##new_topics_1 > div > div.col-md-3 > div > div > a:nth-child(1)
     new_topics = soup.select('div.ml_new_topics > div > a')

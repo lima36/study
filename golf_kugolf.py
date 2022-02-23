@@ -264,6 +264,7 @@ class KU:
             print(tar)
         print('========================')
 
+
     def check_reserve(self):
         url_check = 'https://kugolf.co.kr/GolfRes/onepage/my_golfreslist.asp'
         res=self.sess.get(url_check)
@@ -295,7 +296,7 @@ if __name__ == '__main__':
     target_date = targetDate1 #'20220226'
     target_time = '0800:1400'
 
-    test = 1
+    test = 2
     if test == 1:
         job(user_id, user_pw, target_date, target_time)
 

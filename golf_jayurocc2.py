@@ -222,6 +222,7 @@ class Jayuro:
         print("Session will be closed")
         self.sess.close()
 
+
 ###################################################################
 # Main Loop
 ###################################################################
@@ -260,3 +261,4 @@ if __name__ == '__main__':
     while True:
         print("Running main process............... : ", datetime.datetime.now(timezone('Asia/Seoul')).date())
         time.sleep(1)
+
