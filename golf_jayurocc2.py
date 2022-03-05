@@ -21,9 +21,13 @@ import dateutil.relativedelta
 
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.schedulers.background import BlockingScheduler
+from apscheduler.schedulers.qt import QtScheduler
+
 import re
 import time
 from pytz import timezone
+from PyQt5.QtCore import pyqtSignal
+import pandas as pd
 #------------------------------------------------------------------
 # Golf Class
 #------------------------------------------------------------------
@@ -35,6 +39,11 @@ class Jayuro:
         self.target_date = target_date
         self.target_time = target_time
 
+    def set_date(self, target):
+        self.target_date = target
+
+    def set_time(self, time):
+        self.target_time = time
 
     def login(self, user_id, user_pw):
         url_main = 'https://www.jayurocc.com/Member/Login'
@@ -65,7 +74,14 @@ class Jayuro:
             print('Login Failed')
             return 1
 
+        print('Successfully Logined')
         return resp.status_code
+
+    def logout(self):
+        url = 'https://www.jayurocc.com/Member/Logout'
+        self.sess.get(url)
+        self.sess.close()
+        self.sess = None
 
 
     def goto_reservepage(self):
@@ -77,8 +93,11 @@ class Jayuro:
         soup2 = bs(page2.content, 'html.parser')
         self.view_info ={}
 
+        print(self.target_date )
+
         htbargs                                 = 'LIST|'+ self.today + '|' + self.target_date + '|Y|2|'
-        self.view_info['ctl00$Content$htbArgs'] = htbargs#'LIST|2022-02-06|2022-02-25|Y|2||',
+        print(htbargs)
+        self.view_info['ctl00$Content$htbArgs'] = htbargs#'LIST|2022-02-06|2022-03-07|Y|2||',
         self.view_info['__EVENTTARGET']         = 'ctl00$Content$btnUp'
         self.view_info['__VIEWSTATE']           = soup2.find('input', id='__VIEWSTATE')['value']
         self.view_info['__VIEWSTATEGENERATOR']  = soup2.find('input', id='__VIEWSTATEGENERATOR')['value']
@@ -93,6 +112,17 @@ class Jayuro:
         return len(self.info_list) 
 
 
+    def get_timetable(self):
+        url2 = 'https://www.jayurocc.com/Reservation/Reservation'
+        # 5.Make list of available button
+        time_table = []
+        for info in self.info_list:
+            rlt = re.search(r'(.*)\((.*)\)(.*)', str(info))
+            time_table.append(rlt.group(2).replace("'","").split(','))
+        
+        return time_table
+
+
     def change_reservedate(self):
         url2 = 'https://www.jayurocc.com/Reservation/Reservation'
         # 5.Make list of available button
@@ -104,7 +134,7 @@ class Jayuro:
         # 6.Compare the target time
         self.target_info ={}
         for t in time_table:
-            if int(t[1]) > int(self.target_time[:4]) and int(t[1]) < int(self.target_time[5:]):
+            if int(t[1]) >= int(self.target_time[:4]) and int(t[1]) <= int(self.target_time[5:]):
                 self.target_info['strReserveDate']  = t[0]
                 self.target_info['strReserveTime']  = t[1]
                 self.target_info['strCourseCode']   = t[2]
@@ -155,9 +185,9 @@ class Jayuro:
             alert = re.search(r"(?<=alert\(\').+(?=\'\);)", str(script))
 
             if alert:
-                print(alert.group())
+                print("alert", alert.group())
                 # print(alert)
-                return 2
+                return alert.group()
 
         try:
             self.target_info['PageConnectAuthCode'] = soup5.find('input', id='PageConnectAuthCode')['value']
@@ -210,7 +240,7 @@ class Jayuro:
             if alert:
                 print(alert.group())
                 # print(alert)
-                return 3
+                return alert.group()
 
         print('-----------------------------------------')
         print('Reservation : ', self.target_date, self.target_time)
@@ -218,14 +248,48 @@ class Jayuro:
         print('-----------------------------------------')
 
 
+
+    def get_reservationinfo(self):
+        url='https://www.jayurocc.com/Reservation/ReservationList'
+        page=self.sess.get(url)
+        soup = bs(page.content, 'html.parser')
+
+        table=soup.find('table', class_='table_reserv02')
+        table_html = str(table) # 'table'변수는 bs4.element.tag 형태이기 때문에 table를 문자열 형태로 바꿔준다  
+        df_list = pd.read_html(table_html)
+        df = df_list[0]
+        out = df.iloc[0,:].to_dict()
+        print(out)
+        print(type(out))
+        return out
+
     def close(self):
         print("Session will be closed")
         self.sess.close()
 
 
-###################################################################
-# Main Loop
-###################################################################
+
+def job2(user_id, user_pw, target_date, target_time):
+    today       = datetime.datetime.now(timezone("Asia/Seoul")).date()
+    # target      = today + dateutil.relativedelta.relativedelta(days=21)
+    # targetDate1 = datetime.datetime.strftime(target, '%Y%m%d')
+    # target_date = target
+    # target_time = '0800:1400'
+    print(target_date, target_time)
+
+    cc  = Jayuro(str(today), str(target_date), str(target_time))
+    chk = cc.login(user_id, user_pw)
+    if chk == 200:
+        print(chk)
+        cc.goto_reservepage()
+        if cc.change_reservedate() == 0:
+            print("Target date is available")
+            cc.make_reservation()
+        else:
+            print("Reserve Page Error")
+
+    cc.close()
+
 
 def job():
     user_id = input('Input ID:')
@@ -250,12 +314,69 @@ def job():
 
     cc.close()
 
+stop_flag = 0
+sched = BackgroundScheduler(timezone="Asia/Seoul")
+qt_sched = QtScheduler(timezone="Asia/Seoul")
+
+def autoReserve(user_id, user_pw, target_date, target_time):
+    global stop_flag
+    global qt_sched
+    print(stop_flag)
+    
+    if not qt_sched.running:
+        print('scheduler is not running')
+        # sched = BackgroundScheduler(timezone="Asia/Seoul")
+        #sched = BlockingScheduler()
+        # sched.add_job(job,'interval', seconds=3, id='test',args=['hello?'])
+        qt_sched.add_job(job2,'cron', args=[user_id, user_pw, target_date, target_time], week='1-53', day_of_week='0-6', hour='15', minute='28', second='01', id="100")
+        #sched.add_job(job,'cron', week='1-53', day_of_week='0-6', hour='10', minute='00', second='01')
+        qt_sched.add_job(printlog,'interval', seconds=3, args=[target_date, target_time], id="101")
+        qt_sched.start()
+        print('scheduler is started')
+        # while True:
+        #     if stop_flag == 1:
+        #         sched.remove_job(job2)
+        #         stop_flag = 0
+        #         exit()
+        #     print("Running main process............... : ", datetime.datetime.now(timezone('Asia/Seoul')).date())
+        #     time.sleep(1)
+
+
+def autoStop():
+    global qt_sched
+    print('autoStop in Jayuro')
+    if qt_sched.running:
+        print('scheduler is running')
+        qt_sched.remove_job("100")
+        qt_sched.remove_job("101")
+        qt_sched.remove_all_jobs()
+        qt_sched.shutdown()
+        global stop_flag
+        stop_flag = 1
+        print('scheduler is stopped')
+
+
+# send_log = None
+def printlog(target_date, target_time):
+    # global send_log
+    # send_log = pyqtSignal(str)
+# 
+    print(str(target_date + "," + target_time))
+    # print("Running main process............... : " + str(datetime.datetime.now(timezone('Asia/Seoul'))))
+# 
+    # send_log.emit(str(target_date + "," + target_time))
+
+
+###################################################################
+# Main Loop
+###################################################################
 if __name__ == '__main__':
     sched = BackgroundScheduler(timezone="Asia/Seoul")
     #sched = BlockingScheduler()
     # sched.add_job(job,'interval', seconds=3, id='test',args=['hello?'])
     # sched.add_job(job,'cron', args=[user_id, user_pw, target_date, target_time],week='1-53', day_of_week='0-6', hour='10', minute='00', second='01')
     sched.add_job(job,'cron', week='1-53', day_of_week='0-6', hour='10', minute='00', second='01')
+    sched.add_job(printlog,'interval', seconds=3, id='test',args=['hello?'])
     sched.start()
 
     while True:
