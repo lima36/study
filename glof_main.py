@@ -482,6 +482,8 @@ class AutoReserve():
             print(jj)
 
         self.scheduler.remove_all_jobs()
+        self.jobdb.clear()
+        self.jobid = 1
         print(self.scheduler.get_jobs())
 
     def autoInfo(self):
