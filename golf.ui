@@ -158,14 +158,14 @@
   <widget class="QPushButton" name="make_reserve">
    <property name="geometry">
     <rect>
-     <x>560</x>
+     <x>580</x>
      <y>650</y>
-     <width>141</width>
+     <width>131</width>
      <height>31</height>
     </rect>
    </property>
    <property name="text">
-    <string>Current Reserve</string>
+    <string>Make Reservation</string>
    </property>
    <property name="default">
     <bool>true</bool>
@@ -300,9 +300,9 @@
    <property name="geometry">
     <rect>
      <x>10</x>
-     <y>400</y>
+     <y>430</y>
      <width>301</width>
-     <height>241</height>
+     <height>211</height>
     </rect>
    </property>
    <property name="inputMethodHints">
@@ -322,7 +322,7 @@
     </rect>
    </property>
    <property name="text">
-    <string>Time Table</string>
+    <string>Information</string>
    </property>
   </widget>
   <widget class="QGroupBox" name="groupBox_2">
@@ -331,7 +331,7 @@
      <x>10</x>
      <y>230</y>
      <width>301</width>
-     <height>161</height>
+     <height>191</height>
     </rect>
    </property>
    <property name="title">
@@ -353,14 +353,14 @@
    <widget class="QPushButton" name="auto_start">
     <property name="geometry">
      <rect>
-      <x>70</x>
-      <y>130</y>
+      <x>10</x>
+      <y>157</y>
       <width>81</width>
       <height>31</height>
      </rect>
     </property>
     <property name="text">
-     <string>AutoStart</string>
+     <string>ADD</string>
     </property>
     <property name="default">
      <bool>true</bool>
@@ -370,13 +370,16 @@
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>30</y>
-      <width>121</width>
+      <y>57</y>
+      <width>141</width>
       <height>26</height>
      </rect>
     </property>
     <property name="cursor">
      <cursorShape>WaitCursor</cursorShape>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
     <property name="dateTime">
      <datetime>
@@ -433,8 +436,8 @@
    <widget class="QLabel" name="label_9">
     <property name="geometry">
      <rect>
-      <x>130</x>
-      <y>100</y>
+      <x>160</x>
+      <y>127</y>
       <width>41</width>
       <height>21</height>
      </rect>
@@ -449,11 +452,14 @@
    <widget class="QTimeEdit" name="target_time_end">
     <property name="geometry">
      <rect>
-      <x>160</x>
-      <y>100</y>
+      <x>190</x>
+      <y>127</y>
       <width>111</width>
       <height>26</height>
      </rect>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
     <property name="minimumTime">
      <time>
@@ -466,11 +472,14 @@
    <widget class="QTimeEdit" name="target_time_start">
     <property name="geometry">
      <rect>
-      <x>30</x>
-      <y>100</y>
+      <x>60</x>
+      <y>127</y>
       <width>111</width>
       <height>26</height>
      </rect>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
     <property name="minimumTime">
      <time>
@@ -483,8 +492,8 @@
    <widget class="QPushButton" name="auto_stop">
     <property name="geometry">
      <rect>
-      <x>160</x>
-      <y>130</y>
+      <x>200</x>
+      <y>157</y>
       <width>81</width>
       <height>31</height>
      </rect>
@@ -500,7 +509,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>30</y>
+      <y>57</y>
       <width>112</width>
       <height>23</height>
      </rect>
@@ -513,7 +522,7 @@
     <property name="geometry">
      <rect>
       <x>20</x>
-      <y>60</y>
+      <y>87</y>
       <width>112</width>
       <height>23</height>
      </rect>
@@ -526,8 +535,8 @@
     <property name="geometry">
      <rect>
       <x>140</x>
-      <y>60</y>
-      <width>113</width>
+      <y>87</y>
+      <width>141</width>
       <height>25</height>
      </rect>
     </property>
@@ -535,21 +544,111 @@
      <string>00</string>
     </property>
     <property name="text">
-     <string>21</string>
+     <string>22</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+   </widget>
+   <widget class="QPushButton" name="auto_info">
+    <property name="geometry">
+     <rect>
+      <x>100</x>
+      <y>157</y>
+      <width>81</width>
+      <height>31</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>AutoInfo</string>
+    </property>
+    <property name="default">
+     <bool>true</bool>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_5">
+    <property name="geometry">
+     <rect>
+      <x>20</x>
+      <y>30</y>
+      <width>111</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Schedule Time</string>
+    </property>
+   </widget>
+   <widget class="QTimeEdit" name="scheduler_time">
+    <property name="geometry">
+     <rect>
+      <x>140</x>
+      <y>27</y>
+      <width>141</width>
+      <height>26</height>
+     </rect>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
+    </property>
+    <property name="dateTime">
+     <datetime>
+      <hour>9</hour>
+      <minute>0</minute>
+      <second>0</second>
+      <year>2022</year>
+      <month>1</month>
+      <day>1</day>
+     </datetime>
+    </property>
+    <property name="displayFormat">
+     <string>hh:mm:ss</string>
+    </property>
+   </widget>
+   <widget class="QLabel" name="label_6">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>130</y>
+      <width>41</width>
+      <height>17</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string>Tee</string>
+    </property>
+    <property name="alignment">
+     <set>Qt::AlignCenter</set>
     </property>
    </widget>
   </widget>
   <widget class="QPushButton" name="get_reserved_info">
    <property name="geometry">
     <rect>
-     <x>370</x>
+     <x>330</x>
      <y>650</y>
-     <width>141</width>
+     <width>111</width>
      <height>31</height>
     </rect>
    </property>
    <property name="text">
     <string>Reserved Info</string>
+   </property>
+   <property name="default">
+    <bool>true</bool>
+   </property>
+  </widget>
+  <widget class="QPushButton" name="get_reserved_info_cancel">
+   <property name="geometry">
+    <rect>
+     <x>450</x>
+     <y>650</y>
+     <width>121</width>
+     <height>31</height>
+    </rect>
+   </property>
+   <property name="text">
+    <string>Cancel Reserved</string>
    </property>
    <property name="default">
     <bool>true</bool>

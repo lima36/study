@@ -20,7 +20,7 @@ import dateutil.relativedelta
 import re
 
 from apscheduler import schedulers
-
+from pytz import timezone
 
 
 def make_reserve(id, pw, target_date, target_time, telephone):
@@ -163,6 +163,22 @@ def make_reserve(id, pw, target_date, target_time, telephone):
         if i == 3:
             tar=tar.replace('%u', '\\u').encode().decode('unicode_escape').reaplce('%20', ' ')
         print(tar)
+
+
+def golfjob2(user_id, user_pw, fdate, ftime, day):
+    print('golfjob2', fdate, ftime, day)
+    today       = datetime.datetime.now(timezone("Asia/Seoul")).date()
+
+    if day==21:
+        target      = today + dateutil.relativedelta.relativedelta(days=21)
+        target_date = target
+    else:
+        target_date = fdate
+
+    target_time = ftime
+    user_phone = "010-7795-5647"
+    make_reserve(user_id, user_pw, target_date, target_time, user_phone)
+
 
 # Main Loop
 # Press the green button in the gutter to run the script.

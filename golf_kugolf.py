@@ -23,6 +23,7 @@ import re
 from apscheduler.schedulers.background import BackgroundScheduler
 from apscheduler.schedulers.background import BlockingScheduler
 
+from pytz import timezone
 
 class KU:
     def __init__(self,today, target_date, target_time, parent=None):
@@ -283,6 +284,27 @@ def job(user_id, user_pw, target_date, target_time):
     if cc.check_target():
         cc.reserve()
     cc.close()
+
+
+def golfjob2(user_id, user_pw, fdate, ftime, day):
+    print('golfjob2', fdate, ftime, day)
+    today       = datetime.datetime.now(timezone("Asia/Seoul")).date()
+
+    if day==21:
+        target      = today + dateutil.relativedelta.relativedelta(days=21)
+        target_date = target
+    else:
+        target_date = fdate
+
+    target_time = ftime
+    
+    cc = KU(today, target_date, target_time)
+    cc.login(user_id, user_pw)
+    cc.collect_info()
+    if cc.check_target():
+        cc.reserve()
+    cc.close()
+
 
 
 if __name__ == '__main__':

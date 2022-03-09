@@ -28,6 +28,12 @@ import time
 from pytz import timezone
 from PyQt5.QtCore import pyqtSignal
 import pandas as pd
+
+import os
+from os.path import exists
+import json
+import base64
+idpass = './id.json'
 #------------------------------------------------------------------
 # Golf Class
 #------------------------------------------------------------------
@@ -95,9 +101,10 @@ class Jayuro:
 
         print(self.target_date )
 
+        htmlfile(soup2)
+
         htbargs                                 = 'LIST|'+ self.today + '|' + self.target_date + '|Y|2|'
-        print(htbargs)
-        self.view_info['ctl00$Content$htbArgs'] = htbargs#'LIST|2022-02-06|2022-03-07|Y|2||',
+        self.view_info['ctl00$Content$htbArgs'] = htbargs
         self.view_info['__EVENTTARGET']         = 'ctl00$Content$btnUp'
         self.view_info['__VIEWSTATE']           = soup2.find('input', id='__VIEWSTATE')['value']
         self.view_info['__VIEWSTATEGENERATOR']  = soup2.find('input', id='__VIEWSTATEGENERATOR')['value']
@@ -108,7 +115,6 @@ class Jayuro:
         self.info_list = soup3.find_all('a', href=re.compile(r'javascript:Reserve'))
         
         print("# of Reserve Available Time : ", len(self.info_list))
-
         return len(self.info_list) 
 
 
@@ -263,19 +269,77 @@ class Jayuro:
         print(type(out))
         return out
 
+    def cancel_reservation(self):
+        print('cancel reservation')
+        url = 'https://www.jayurocc.com/Reservation/ReservationList'
+        page=self.sess.get(url)
+        soup = bs(page.content, 'html.parser')
+
+        
+
+
+        # Get the reserved information
+        result = {}
+        table = soup.find('table', class_='table_reserv02')
+        for header, value in zip(*(tr.find_all(['td','th']) for tr in table.find_all('tr'))):
+            result[header.text] = value.text
+
+        canceldata=soup.find('a', id='ctl00_Content_rptResvList_ctl00_reserveCanlink')['href']
+        cancelvalue = re.search(r'javascript:ReservationCancel\((.*)\)', canceldata).group(1).replace("'", '').split(',')
+        canceltitle = ['strReserveDate', 'strReserveTime', 'strCourseCode', 'strSeq', 'intDayGubun', 'strReserveGubun', 'strHole', 'strCancelName', 'intBuljum']
+        canceldict = {canceltitle[i]: cancelvalue[i] for i in range(len(canceltitle))}
+        print(str(canceldict))
+
+        param = {'__EVENTTARGET' :  'ctl00$Content$btnCancel',
+                '__VIEWSTATE' :     soup.find('input', id='__VIEWSTATE')['value'],
+                '__VIEWSTATEGENERATOR': soup.find('input', id='__VIEWSTATEGENERATOR')['value'],
+                '__EVENTVALIDATION' : soup.find('input', id='__EVENTVALIDATION')['value'],
+                'PageConnectAuthCode':soup.find('input', id='PageConnectAuthCode')['value'],
+                'strReserveDate' :  canceldict['strReserveDate'],
+                'strReserveTime' :  canceldict['strReserveTime'],
+                'strCourseCode' :   canceldict['strCourseCode'],
+                'strSeq':           canceldict['strSeq'],
+                'intDayGubun':      canceldict['intDayGubun'],
+                'strReserveGubun':  canceldict['strReserveGubun'],
+                'strHole':          canceldict['strHole'],
+                'strCancelName':    canceldict['strCancelName'],
+                'intBuljum' :       canceldict['intBuljum']
+        }
+
+        page2=self.sess.post(url, param)
+        print("Cancel Completed:",page2)
+        soup2 = bs(page2.content, 'html.parser')
+        for script in soup2.find_all("script"):
+            # <script language="javascript">alert('2022-02-13 10:00:00 부터 예약이 가능합니다.');
+            # (?<=...) Matches if the current position in the string is preceded by a match for ...
+            # (?=...)  Matches if ... matches next, but doesn’t consume any of the string. 
+            alert = re.search(r"(?<=alert\(\').+(?=\'\);)", str(script))
+            if alert:
+                print("alert", alert.group())
+                # print(alert)
+                return alert.group()
+
+
     def close(self):
         print("Session will be closed")
         self.sess.close()
 
 
+def htmlfile(html):
+    with open('log.html', 'w') as f:
+        f.write(str(html))
+
+
+sched = BackgroundScheduler(timezone="Asia/Seoul")
 
 def job2(user_id, user_pw, target_date, target_time):
+    global sched
     today       = datetime.datetime.now(timezone("Asia/Seoul")).date()
     # target      = today + dateutil.relativedelta.relativedelta(days=21)
     # targetDate1 = datetime.datetime.strftime(target, '%Y%m%d')
     # target_date = target
     # target_time = '0800:1400'
-    print(target_date, target_time)
+    # print(target_date, target_time)
 
     cc  = Jayuro(str(today), str(target_date), str(target_time))
     chk = cc.login(user_id, user_pw)
@@ -287,13 +351,20 @@ def job2(user_id, user_pw, target_date, target_time):
             cc.make_reservation()
         else:
             print("Reserve Page Error")
-
+    print('Remove alredy executed')
+    sched.remove_job("102")
     cc.close()
 
 
-def job():
-    user_id = input('Input ID:')
-    user_pw = input('Password:')
+def golfjob():
+    if exists(idpass):
+        with open(idpass, 'r') as infile:
+            data=json.load(infile)
+            user_id = data['id']
+            user_pw = base64.b64decode(data['password']).decode('utf-8')
+    else:
+        user_id = input('Input ID:')
+        user_pw = input('Password:')
 
     today       = datetime.datetime.now(timezone("Asia/Seoul")).date()
     target      = today + dateutil.relativedelta.relativedelta(days=21)
@@ -308,63 +379,108 @@ def job():
         cc.goto_reservepage()
         if cc.change_reservedate() == 0:
             print("Target date is available")
-            # cc.make_reservation()
+            cc.make_reservation()
         else:
             print("Reserve Page Error")
-
+    sched.remove_job("102")
     cc.close()
 
-stop_flag = 0
-sched = BackgroundScheduler(timezone="Asia/Seoul")
-qt_sched = QtScheduler(timezone="Asia/Seoul")
 
-def autoReserve(user_id, user_pw, target_date, target_time):
-    global stop_flag
-    global qt_sched
-    print(stop_flag)
+def golfjob2(user_id, user_pw, fdate, ftime, day):
+    print('golfjob2', fdate, ftime, day)
+    today       = datetime.datetime.now(timezone("Asia/Seoul")).date()
+
+    if day==21:
+        target      = today + dateutil.relativedelta.relativedelta(days=21)
+        target_date = target
+    else:
+        target_date = fdate
+
+    target_time = ftime
+
+    cc  = Jayuro(str(today), str(target_date), str(target_time))
+    chk = cc.login(user_id, user_pw)
+    if chk == 200:
+        print(chk)
+        cc.goto_reservepage()
+        if cc.change_reservedate() == 0:
+            print("Target date is available")
+            cc.make_reservation()
+        else:
+            print("Reserve Page Error")
+    cc.close()
+
+
+def printlog(target_date, target_time):
+    now = datetime.datetime.now()
+    print(str(now) + str(target_date + "," + target_time))
+    # print("Running main process............... : " + str(datetime.datetime.now(timezone('Asia/Seoul'))))
+
+
+stop_flag = 0
+jobid = 0
+def addGoldJob(user_id, user_pw, schedule, target_date, target_time, day=21):
+    global jobid
+    print('autoReserve in Jayuro', schedule.hour(), schedule.minute(), schedule.second(), target_date, target_time, day)
+    while sched.get_job(jobid):
+        print(jobid, sched.get_job(jobid).id)
+        jobid += 1
     
-    if not qt_sched.running:
-        print('scheduler is not running')
+    sched.add_job(golfjob2,'cron', args=[user_id, user_pw, target_date, target_time, day], week='1-53', day_of_week='0-6', \
+                                        hour=schedule.hour(), minute=schedule.minute(), second=schedule.second(), id=str(jobid))
+        
+    if sched.state == 1: #apscheduler.schedulers.base.STATE_RUNNING
+        print('Scheduler is running')
+    elif sched.state == 2:
+        print('Scheduler is paused')
+    elif sched.state == 0:
+        print('Scheduler is stopped')
+        sched.start()
+
+
+def autoReserve(user_id, user_pw, schedule, target_date, target_time, day=21):
+    global sched
+    global stop_flag
+    print('autoReserve in Jayuro', schedule.hour(), schedule.minute(), schedule.second(), target_date, target_time, day)
+ 
+    if stop_flag == 0 or stop_flag ==2:
         # sched = BackgroundScheduler(timezone="Asia/Seoul")
         #sched = BlockingScheduler()
-        # sched.add_job(job,'interval', seconds=3, id='test',args=['hello?'])
-        qt_sched.add_job(job2,'cron', args=[user_id, user_pw, target_date, target_time], week='1-53', day_of_week='0-6', hour='15', minute='28', second='01', id="100")
-        #sched.add_job(job,'cron', week='1-53', day_of_week='0-6', hour='10', minute='00', second='01')
-        qt_sched.add_job(printlog,'interval', seconds=3, args=[target_date, target_time], id="101")
-        qt_sched.start()
+        # sched.add_job(job,'interval', seconds=3, id='test')
+        # qt_sched.add_job(job2,'cron', args=[user_id, user_pw, target_date, target_time], week='1-53', day_of_week='0-6', hour='10', minute='00', second='01', id="100")
+        sched.add_job(golfjob2,'cron', args=[user_id, user_pw, target_date, target_time, day], week='1-53', day_of_week='0-6', \
+                                        hour=schedule.hour(), minute=schedule.minute(), second=schedule.second(), id="102")
+        sched.add_job(printlog,'interval', seconds=60, args=[target_date, target_time], id="101")
+        if stop_flag == 0:
+            sched.start()
+        stop_flag = 1
+
+        for jj in sched.get_jobs():
+            print(jj)
+
         print('scheduler is started')
-        # while True:
-        #     if stop_flag == 1:
-        #         sched.remove_job(job2)
-        #         stop_flag = 0
-        #         exit()
-        #     print("Running main process............... : ", datetime.datetime.now(timezone('Asia/Seoul')).date())
-        #     time.sleep(1)
 
 
 def autoStop():
-    global qt_sched
+    global sched
+    global stop_flag
+    
     print('autoStop in Jayuro')
-    if qt_sched.running:
-        print('scheduler is running')
-        qt_sched.remove_job("100")
-        qt_sched.remove_job("101")
-        qt_sched.remove_all_jobs()
-        qt_sched.shutdown()
-        global stop_flag
-        stop_flag = 1
-        print('scheduler is stopped')
+    if stop_flag == 0 or stop_flag ==1:
+        for jj in sched.get_jobs():
+            print(jj)
+
+        sched.remove_all_jobs()
+        print(sched.get_jobs())
+        stop_flag = 2
+        return
 
 
-# send_log = None
-def printlog(target_date, target_time):
-    # global send_log
-    # send_log = pyqtSignal(str)
-# 
-    print(str(target_date + "," + target_time))
-    # print("Running main process............... : " + str(datetime.datetime.now(timezone('Asia/Seoul'))))
-# 
-    # send_log.emit(str(target_date + "," + target_time))
+def autoInfo():
+    print('Auto information in Jayuro')
+    print(sched.get_jobs())
+    for jj in sched.get_jobs():
+        print(jj)
 
 
 ###################################################################
@@ -375,11 +491,14 @@ if __name__ == '__main__':
     #sched = BlockingScheduler()
     # sched.add_job(job,'interval', seconds=3, id='test',args=['hello?'])
     # sched.add_job(job,'cron', args=[user_id, user_pw, target_date, target_time],week='1-53', day_of_week='0-6', hour='10', minute='00', second='01')
-    sched.add_job(job,'cron', week='1-53', day_of_week='0-6', hour='10', minute='00', second='01')
+    # sched.add_job(job,'cron', week='1-53', day_of_week='0-6', hour='10', minute='00', second='01')
     sched.add_job(printlog,'interval', seconds=3, id='test',args=['hello?'])
+    # sched.add_job(autoStop, 'interval', seconds=3, id = 'rebate')
     sched.start()
 
     while True:
         print("Running main process............... : ", datetime.datetime.now(timezone('Asia/Seoul')).date())
+        for jj in sched.get_jobs():
+            print(jj)
         time.sleep(1)
 
