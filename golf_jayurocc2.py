@@ -260,13 +260,16 @@ class Jayuro:
         page=self.sess.get(url)
         soup = bs(page.content, 'html.parser')
 
+        empty = soup.find('tr', attrs={'id' :'ctl00_Content_rptResvListEmpty'})
+        if empty:
+            return None
+
         table=soup.find('table', class_='table_reserv02')
         table_html = str(table) # 'table'변수는 bs4.element.tag 형태이기 때문에 table를 문자열 형태로 바꿔준다  
         df_list = pd.read_html(table_html)
         df = df_list[0]
         out = df.iloc[0,:].to_dict()
         print(out)
-        print(type(out))
         return out
 
     def cancel_reservation(self):

@@ -52,11 +52,7 @@ class Form(QtWidgets.QDialog):
         # self.get_timetable.clicked.connect(self.GetTimeTable)
         self.listWidget.itemDoubleClicked.connect(self.onTimetable)
         self.calendarWidget.clicked.connect(self.GetTimeTable)
-        
-
-        today = datetime.datetime.today()
-        selected_date = QDate(today.year,today.month, today.day+21)
-        self.calendarWidget.setSelectedDate(selected_date)
+        self.calendarWidget.setSelectedDate(QDate.currentDate())
         self.err = 1
         self.progress = -1
 
@@ -215,8 +211,8 @@ class Form(QtWidgets.QDialog):
         print(t)
         
         if today.date() > target.toPyDate() :
-            print('Today : ', today.day)
-            print('Target Date : ', target.day())
+            print('Today : ', today)
+            print('Target Date : ', target)
             print("Target date is too late")
             self.listWidget.insertItem(0, "Unavailable")
             return
@@ -370,13 +366,15 @@ class Form(QtWidgets.QDialog):
 
         data=self.cc.get_reservationinfo()
         self.listWidget.clear()
-        print(data)
-
-        i = 0
-        for key in data:
-            print(key,data[key])
-            self.listWidget.insertItem(i,str(key) + ":" + str(data[key]))
-            i = i+1
+        if data is None:
+            print(data)
+            self.listWidget.insertItem(0, 'No Reserved Data')
+        else:
+            i = 0
+            for key in data:
+                print(key,data[key])
+                self.listWidget.insertItem(i,str(key) + ":" + str(data[key]))
+                i = i+1
 
     def cancelReserve(self):
         if self.cc is None:
@@ -387,15 +385,15 @@ class Form(QtWidgets.QDialog):
         if data is None:
             self.logging('No Reserved Information')
             msg = "No Reservation !!"
+            return
         else:
             for key in data:
                 msg += str(key) + ":" + str(data[key]) + "\n"
 
         dlg = CustomDialog(msg)
-        
         if dlg.exec() == QDialog.Accepted:
             print('Accepted')
-            self.golf.cancel_reservation()
+            self.cc.cancel_reservation()
         else:
             print('Rejected')
 
