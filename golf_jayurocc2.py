@@ -33,10 +33,16 @@ import os
 from os.path import exists
 import json
 import base64
+import ssl
+
 idpass = './id.json'
 #------------------------------------------------------------------
 # Golf Class
 #------------------------------------------------------------------
+
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
+
 class Jayuro:
 
     def __init__(self, today, target_date, target_time, parent=None): 
@@ -55,7 +61,8 @@ class Jayuro:
         url_main = 'https://www.jayurocc.com/Member/Login'
 
         # 2.Retrive the __doPostback information
-        page1 = self.sess.get(url_main)
+        ssl._create_default_https_context = ssl._create_unverified_context
+        page1 = self.sess.get(url_main, verify=False)
         soup1 = bs(page1.content, 'html.parser')
 
         # 3.Login the page
@@ -101,7 +108,7 @@ class Jayuro:
 
         print(self.target_date )
 
-        htmlfile(soup2)
+        # htmlfile(soup2)
 
         htbargs                                 = 'LIST|'+ self.today + '|' + self.target_date + '|Y|2|'
         self.view_info['ctl00$Content$htbArgs'] = htbargs
