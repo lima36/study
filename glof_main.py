@@ -26,16 +26,22 @@ import json
 from PyQt5.QtGui import *
 
 import time
-import bcrypt
+# import bcrypt
 import base64
 idpass = './id.json'
+import platform
 
 from apscheduler.schedulers.background import BackgroundScheduler
+import urllib3
+urllib3.disable_warnings(urllib3.exceptions.InsecureRequestWarning)
 
 class Form(QtWidgets.QDialog): 
     def __init__(self, parent=None):
         QtWidgets.QDialog.__init__(self, parent) 
-        uic.loadUi("/home/lima/Work_Python/Golf/golf.ui", self)
+        if platform.system() == 'Windows':
+            uic.loadUi(r"D:\7.Software\study\golf.ui", self)
+        else:
+            uic.loadUi("/home/lima/Work_Python/Golf/golf.ui", self)
         self.cc = None
         self.golfcourse.addItem('자유로 CC')
         self.golfcourse.addItem('KU Golf')
