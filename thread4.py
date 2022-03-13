@@ -6,14 +6,33 @@ from PyQt5 import uic
 
 # This is our window from QtCreator
 # import mainwindow_auto
-form_class = uic.loadUiType("/home/lima/Work_Python/Golf/test_pyqt2.ui")[0]
+form_class = uic.loadUiType("/home/lima/Work_Python/Study/study.ui")[0]
 from openpyxl import load_workbook
 import re
+from PyQt5.QtCore import Qt
+
 class myExcel():
-    def __init__(self):
+    def __init__(self, filepath=None):
+        if filepath != None:
+            self.row = 1
+            self.wb  = load_workbook('/home/lima/Work_Python/Scraping/exam.xlsx')
+            self.ws  = self.wb.active
+        else:
+            self.row = 0
+            self.wb  = None#load_workbook('/home/lima/Work_Python/Scraping/exam.xlsx')
+            self.ws  = None#self.wb.active
+
+    def open_excel(self, filepath):
+        if self.wb != None:
+            self.wb.close()
+
         self.row = 1
-        self.wb  = load_workbook('/home/lima/Work_Python/Scraping/exam.xlsx')
+        self.wb  = load_workbook(filepath)
         self.ws  = self.wb.active
+
+    def get_total(self):
+        print(self.ws.max_row)
+        return self.ws.max_row
 
     def read_tab(self):
         for tab in self.wb.sheetnames:
@@ -71,6 +90,7 @@ class DataCaptureThread(QThread):
         print ("Collecting Process Data")
         data = self.excel.read_current(1)
         self.parent.updateQnA(data[0], data[1])
+        self.parent.progressBar.setValue(self.excel.get_row())
 
     def __init__(self, parent, excel):
         QThread.__init__(self, parent)
@@ -82,6 +102,7 @@ class DataCaptureThread(QThread):
         self.collectProcessData()
 
     def run(self):
+        print('Thread run')
         duration = int(self.parent.lineEdit_time.text())
         if duration >=1 and duration <100:
             self.duration = duration
@@ -91,7 +112,7 @@ class DataCaptureThread(QThread):
         loop = PyQt5.QtCore.QEventLoop()
         loop.exec_()
 
-
+default_file = '/home/lima/Work_Python/Scraping/exam.xlsx'
 class MainWindow(QMainWindow, form_class):
     def __init__(self):
         super(self.__class__, self).__init__()
@@ -101,15 +122,22 @@ class MainWindow(QMainWindow, form_class):
         self.Button_prev.clicked.connect(self.pressedPrevBtn)
         self.Button_next.clicked.connect(self.pressedNextBtn)
         self.Button_answer.clicked.connect(self.pressedAnswerBtn)
-        self.excel = myExcel()
+
+        self.excel = myExcel(default_file)
         for tab in self.excel.read_tab():
             self.comboBox_episode.addItem(tab)
+        
         
         # self.comboBox_episode.currentIndexChanged().connect(self.onTabChanged)
         self.onTabChanged(self.comboBox_episode.currentText())
         self.comboBox_episode.activated[str].connect(self.onTabChanged)
         self.dataCollectionThread = None
         self.auto = False
+        self.pushButton_openfile.clicked.connect(self.fileOpen)
+        self.lineEdit_inputfile.setText(default_file)
+        self.actionOpen.triggered.connect(self.fileOpen)
+        self.actionStay_On.triggered.connect(self.windowDisplay)
+
 
     def updateQnA(self, question, answer):
         self.textBrowser_question.clear()
@@ -125,6 +153,8 @@ class MainWindow(QMainWindow, form_class):
         self.excel.select_sheet(value)
         data = self.excel.read_current(0)
         self.updateQnA(data[0], data[1])
+        self.progressBar.setMaximum(self.excel.get_total())
+        self.progressBar.setValue(self.excel.get_row())
         
 
     def pressedStartBtn(self):
@@ -145,14 +175,32 @@ class MainWindow(QMainWindow, form_class):
         self.pressedStopBtn()
         data=self.excel.read_prev()
         self.updateQnA(data[0], data[1])
+        self.progressBar.setValue(self.excel.get_row())
 
     def pressedNextBtn(self):
         self.pressedStopBtn()
         data=self.excel.read_next()
         self.updateQnA(data[0], data[1])
+        self.progressBar.setValue(self.excel.get_row())
 
     def pressedAnswerBtn(self):
         pass
+
+    def fileOpen(self):
+        self.fname = QFileDialog.getOpenFileName(self, 'Open file', './')[0]
+        self.lineEdit_inputfile.setText(self.fname)
+        self.excel.open_excel(self.fname)
+        self.comboBox_episode.clear()
+        for tab in self.excel.read_tab():
+            self.comboBox_episode.addItem(tab)
+        self.onTabChanged(self.comboBox_episode.currentText())
+
+    def windowDisplay(self):
+        on = bool(self.windowFlags() & Qt.WindowStaysOnTopHint)
+        print(on)
+        # toggle the state of the flag
+        self.setWindowFlag(Qt.WindowStaysOnTopHint)
+        self.show()
 
 def main():
      # a new app instance
