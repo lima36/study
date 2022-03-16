@@ -6,6 +6,13 @@ import pandas as pd
 from selenium.webdriver.common.by import By
 import re
 from bs4  import BeautifulSoup as bs
+import openpyxl
+from openpyxl import load_workbook
+
+wb = openpyxl.Workbook()
+ws = wb.active
+
+
 # step2. 네이버 뉴스 댓글정보 수집 함수
 def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
     # 크롬 드라이버로 해당 url에 접속
@@ -34,8 +41,9 @@ def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
     comments=driver.find_element_by_css_selector('a.button_comment')
     comments.click()
 
-
+    data = []
     nextbtns = driver.find_elements_by_css_selector('div.CommentBox > div.ArticlePaginate > button')
+    ind=1
     for i, next in enumerate(nextbtns):
         nextbtns[i].click()
         # 본격적인 크롤링 타임
@@ -58,19 +66,33 @@ def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
         commentlist = driver.find_element_by_css_selector("ul[class='comment_list'")
         html = commentlist.get_attribute('innerHTML')
         soup = bs(html, 'html.parser')
-
+        j=5
         for li in soup.select('li'):
             rep = []
             if "CommentItem--reply" in li.attrs['class']:
                 rep.append(li.text.strip())
                 print(li.text.strip())
+                data.append(li.text.strip())
+                ws.cell(ind, j).value = str(li.text.strip())
+                j += 1
             elif "CommentItem" in li.attrs['class']:
-                id = li.attrs['id'].strip()
+                j = 5
+                try:
+                    id = li.attrs['id'].strip()
+                except:
+                    print('error')
+                    continue
                 nickname=li.find('div', class_='comment_nick_info')
                 print(nickname.text.strip())
                 textbox = li.find('div', class_='comment_text_box')
                 ask = textbox.text.strip()
                 print(id, ask)
+                ws.cell(ind, 1).value = str(i)
+                ws.cell(ind, 2).value = str(id)
+                ws.cell(ind, 3).value = str(nickname.text.strip())
+                ws.cell(ind, 4).value = str(textbox.text.strip())
+
+                ind += 1
                 
 
         # for a in soup.find('li[class="CommentItem"]'):
@@ -115,9 +137,11 @@ def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
             #     pass
             
             
-
-        time.sleep(3)
+        time.sleep(5)
         print(next.text)
+        wb.save('./kiki.xlsx')
+    wb.close()
+
     # 1)작성자
     # # selenium으로 작성자 포함된 태그 모두 수집
     # nicknames = driver.find_elements_by_css_selector('span.u_cbox_nick')
@@ -149,6 +173,7 @@ def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
 # step3. 실제 함수 실행 및 엑셀로 저장
 if __name__ == '__main__': # 설명하자면 매우 길어져서 그냥 이렇게 사용하는 것을 권장
     
+
     # 원하는 기사 url 입력
     # url = '댓글 크롤링 원하는 기사의 url (주의! 댓글보기를 클릭한 상태의 url이어야 함'
     url = 'https://cafe.naver.com/dochithink?iframe_url_utf8=%2FArticleRead.nhn%253Fclubid%3D12843510%2526articleid%3D1832183%2526referrerAllArticles%3Dtrue'
