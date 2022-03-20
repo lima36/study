@@ -22,7 +22,7 @@ thin_border = Border(left=Side(style='thin'),
 def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
     # 크롬 드라이버로 해당 url에 접속
     if platform.system() == "Windows":
-        driver = webdriver.Chrome("D:/7.Software/chromedriver_win32/chromedriver")
+        driver = webdriver.Chrome('D:/Software/chromedriver')
     else:
         driver = webdriver.Chrome("/home/lima/Work_Python/chromedriver_linux64/chromedriver")
     
@@ -124,6 +124,7 @@ def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
         ws.column_dimensions['J'].width = 80 # text
     
         wb.save('./kiki5.xlsx')
+        print('saving')
 
     wb.close()
 
