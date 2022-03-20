@@ -70,6 +70,7 @@ def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
                 ws.cell(ind-1, j+1).border = thin_border
                 ws.cell(ind-1, j+2).alignment = Alignment(wrap_text=True, vertical='top')
                 ws.cell(ind-1, j+2).border = thin_border
+
                 j += 3
             elif "CommentItem" in li.attrs['class']:
                 j = 5
@@ -89,9 +90,11 @@ def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
 
                 # print(nickname.text.strip())
                 # print(id, textbox.text.strip())
+                # print(id, textdate.text.strip())
                 
                 ws.cell(ind, 1).value = str(ind)
                 ws.cell(ind, 2).value = str(textdate.text.strip())
+
                 ws.cell(ind, 3).value = str(nickname.text.strip())
                 ws.cell(ind, 4).value = str(textbox.text.strip())
                 
@@ -108,19 +111,20 @@ def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
             
         time.sleep(10)
         print(next.text)
-        ws.column_dimensions['A'].width = 5
-        ws.column_dimensions['B'].width = 10
-        ws.column_dimensions['C'].width = 10
-        ws.column_dimensions['D'].width = 80
-        ws.column_dimensions['E'].width = 10
-        ws.column_dimensions['F'].width = 10
-        ws.column_dimensions['G'].width = 80
-        ws.column_dimensions['H'].width = 10
-        ws.column_dimensions['I'].width = 10
-        ws.column_dimensions['J'].width = 80
+
+        ws.column_dimensions['A'].width = 5 # index
+        ws.column_dimensions['B'].width = 10 # time
+        ws.column_dimensions['C'].width = 10 # nickname
+        ws.column_dimensions['D'].width = 80 # text
+        ws.column_dimensions['E'].width = 10 # time
+        ws.column_dimensions['F'].width = 10 # nickname
+        ws.column_dimensions['G'].width = 80 # text
+        ws.column_dimensions['H'].width = 10 # time
+        ws.column_dimensions['I'].width = 10 # nickname
+        ws.column_dimensions['J'].width = 80 # text
     
-        wb.save('./kiki4.xlsx')
-        print('Excel saving...')
+        wb.save('./kiki5.xlsx')
+
     wb.close()
 
 
