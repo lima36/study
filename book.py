@@ -62,8 +62,6 @@ def get_book_site(url, wait_time=5, delay_time=0.1):
                 print(i, 'error:info_name')
                 pass
 
-            
-
             try:
                 info_pub = gd.find_element_by_class_name('authPub.info_pub')
                 ws.cell(row, 3).value = info_pub.text
@@ -71,8 +69,6 @@ def get_book_site(url, wait_time=5, delay_time=0.1):
                 print(i, 'error:info_pub')
                 pass
 
-            
-            
             try:
                 info_date = gd.find_element_by_class_name('authPub.info_date')
                 ws.cell(row, 4).value = info_date.text
@@ -102,7 +98,7 @@ def get_book_site(url, wait_time=5, delay_time=0.1):
                 ws.cell(row, 7).value = re.search(r'([0-9.]+)', yes_b.text)[1]
                 print(re.search(r'([0-9.]+)', yes_b.text)[1])
             except:
-                print(i, 'error:info_rating')
+                print(i, 'error:rating_grade')
                 pass
 
 
