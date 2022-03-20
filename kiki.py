@@ -57,16 +57,20 @@ def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
                 
                 nickname=li.find('div', class_='comment_nick_info')
                 textbox = li.find('div', class_='comment_text_box')
+                textdate = li.find('span', class_='comment_info_date')
                 
                 # CommentItem 에서 index를 1로 증가 시키기 전의 댓글로 등록되어야 함.
-                ws.cell(ind-1, j).value = str(nickname.text.strip())
-                ws.cell(ind-1, j+1).value = str(textbox.text.strip())
+                ws.cell(ind-1, j).value = str(textdate.text.strip())
+                ws.cell(ind-1, j+1).value = str(nickname.text.strip())
+                ws.cell(ind-1, j+2).value = str(textbox.text.strip())
                     
                 ws.cell(ind-1, j).alignment = Alignment(wrap_text=True, vertical='top')
                 ws.cell(ind-1, j).border = thin_border
                 ws.cell(ind-1, j+1).alignment = Alignment(wrap_text=True, vertical='top')
                 ws.cell(ind-1, j+1).border = thin_border
-                j += 2
+                ws.cell(ind-1, j+2).alignment = Alignment(wrap_text=True, vertical='top')
+                ws.cell(ind-1, j+2).border = thin_border
+                j += 3
             elif "CommentItem" in li.attrs['class']:
                 j = 5
                 deleted = li.find('p', class_='comment_deleted')
@@ -77,6 +81,7 @@ def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
                     id = li.attrs['id'].strip()
                     nickname=li.find('div', class_='comment_nick_info')
                     textbox = li.find('div', class_='comment_text_box')
+                    textdate = li.find('span', class_='comment_info_date')
                 except:
                     print(i, ind, li)
                     print('error')
@@ -86,7 +91,7 @@ def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
                 # print(id, textbox.text.strip())
                 
                 ws.cell(ind, 1).value = str(ind)
-                ws.cell(ind, 2).value = str(id)
+                ws.cell(ind, 2).value = str(textdate.text.strip())
                 ws.cell(ind, 3).value = str(nickname.text.strip())
                 ws.cell(ind, 4).value = str(textbox.text.strip())
                 
@@ -108,11 +113,13 @@ def get_naver_news_comments(url, wait_time=5, delay_time=0.1):
         ws.column_dimensions['C'].width = 10
         ws.column_dimensions['D'].width = 80
         ws.column_dimensions['E'].width = 10
-        ws.column_dimensions['F'].width = 80
-        ws.column_dimensions['G'].width = 10
-        ws.column_dimensions['H'].width = 80
+        ws.column_dimensions['F'].width = 10
+        ws.column_dimensions['G'].width = 80
+        ws.column_dimensions['H'].width = 10
+        ws.column_dimensions['I'].width = 10
+        ws.column_dimensions['J'].width = 80
     
-        wb.save('./kiki3.xlsx')
+        wb.save('./kiki4.xlsx')
         print('Excel saving...')
     wb.close()
 
